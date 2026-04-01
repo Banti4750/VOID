@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-black: var(--black);
+  --color-bone: var(--bone);
+  --color-red: var(--red);
+  --color-steel: var(--steel);
+  --color-dark-2: var(--dark-2);
+  --color-dark-3: var(--dark-3);
+  
+  --font-bebas: var(--font-bebas);
+  --font-sans: var(--font-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --black: #080808;
+  --bone: #f0ede8;
+  --red: #ff1a1a;
+  --steel: #a0a0a0;
+  --dark-2: #111111;
+  --dark-3: #1a1a1a;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--black);
+  color: var(--bone);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  cursor: none; /* We use a custom cursor everywhere */
+}
+
+::selection {
+  background-color: var(--red);
+  color: var(--black);
+}
+
+/* Typography globals */
+h1, h2, h3, h4, .font-bebas {
+  font-family: var(--font-bebas), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.font-sans {
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* Custom Cursor class logic handled by JS */
+.hide-cursor, .hide-cursor * {
+  cursor: none !important;
+}
+
+/* Lenis Smooth Scroll Boilerplate */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }
