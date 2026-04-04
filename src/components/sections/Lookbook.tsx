@@ -1,118 +1,178 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const panels = [
-  { id: 1, title: "L.01", name: "VOID FLIGHT SUIT" },
-  { id: 2, title: "L.02", name: "ZERO-G VEST" },
-  { id: 3, title: "L.03", name: "NYLON CARGO" },
-  { id: 4, title: "L.04", name: "SYSTEM TRENCH" }
+gsap.registerPlugin(ScrollTrigger);
+
+const PANELS = [
+  {
+    code: "L.01",
+    name: "CONCRETE GHOST",
+    src: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1200&q=90&fit=crop",
+  },
+  {
+    code: "L.02",
+    name: "AFTER DARK",
+    src: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1200&q=90&fit=crop",
+  },
+  {
+    code: "L.03",
+    name: "SIGNAL LOST",
+    src: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&q=90&fit=crop",
+  },
+  {
+    code: "L.04",
+    name: "VOID WALKER",
+    src: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=1200&q=90&fit=crop",
+  },
 ];
 
 export function Lookbook() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    if (!containerRef.current || !trackRef.current) return;
 
-    if (containerRef.current && trackRef.current) {
-      const panelsArray = gsap.utils.toArray(trackRef.current.children) as HTMLElement[];
-      const totalWidth = trackRef.current.scrollWidth;
+    const panels = gsap.utils.toArray<HTMLElement>(
+      trackRef.current.querySelectorAll(".lb-panel")
+    );
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          pin: true,
-          start: "top top",
-          end: () => `+=${totalWidth}`,
-          scrub: 1,
-          invalidateOnRefresh: true,
-        }
-      });
+    // Main horizontal scroll timeline
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        pin: true,
+        start: "top top",
+        end: () => `+=${trackRef.current!.scrollWidth - window.innerWidth}`,
+        scrub: 1,
+        invalidateOnRefresh: true,
+      },
+    });
 
-      tl.to(panelsArray, {
-        xPercent: -100 * (panelsArray.length - 1),
-        ease: "none",
-      });
+    tl.to(trackRef.current, {
+      x: () => -(trackRef.current!.scrollWidth - window.innerWidth),
+      ease: "none",
+    });
 
-      // inner parallax and text reveal per panel
-      panelsArray.forEach((panel, i) => {
-        if (i === 0) return;
-        
-        // simple parallax on inner image
-        const img = panel.querySelector(".inner-img");
-        if (img) {
-          gsap.fromTo(img,
-            { scale: 1.2, xPercent: 20 },
-            { 
-              scale: 1, xPercent: 0, 
-              scrollTrigger: {
-                trigger: panel,
-                containerAnimation: tl,
-                start: "left center",
-                end: "center center",
-                scrub: true,
-              }
-            }
-          );
-        }
+    // Per-panel animations
+    panels.forEach((panel, i) => {
+      // Image parallax — image moves slower than panel
+      const img = panel.querySelector(".lb-img");
+      if (img) {
+        gsap.fromTo(
+          img,
+          { x: -80 },
+          {
+            x: 80,
+            ease: "none",
+            scrollTrigger: {
+              trigger: panel,
+              containerAnimation: tl,
+              start: "left right",
+              end: "right left",
+              scrub: true,
+            },
+          }
+        );
+      }
 
-        const text = panel.querySelector(".panel-name");
-        if (text) {
-          gsap.fromTo(text,
-            { y: 50, opacity: 0 },
-            { 
-              y: 0, opacity: 1, 
-              scrollTrigger: {
-                trigger: panel,
-                containerAnimation: tl,
-                start: "left 70%",
-                end: "center center",
-                scrub: 1,
-              }
-            }
-          );
-        }
-      });
-    }
+      // Look name slides up
+      const name = panel.querySelector(".lb-name");
+      if (name && i > 0) {
+        gsap.fromTo(
+          name,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            scrollTrigger: {
+              trigger: panel,
+              containerAnimation: tl,
+              start: "left 60%",
+              end: "center center",
+              scrub: 1,
+            },
+          }
+        );
+      }
+    });
 
     return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
 
   return (
-    <section ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden flex items-center">
-      
-      <div 
-        ref={trackRef} 
-        className="flex h-full w-[400vw] relative"
-        style={{ width: `${panels.length * 100}vw` }}
-      >
-        {panels.map((panel, idx) => (
-          <div key={panel.id} className="relative w-screen h-full flex-shrink-0 flex items-center justify-center overflow-hidden border-r-[1px] border-dark-2">
-            
-            <div className="inner-img absolute inset-0 w-full h-full bg-dark-3 z-0 overflow-hidden">
-               {/* Stand-in for dark fashion imagery */}
-               <div className="w-full h-full bg-gradient-to-tr from-black to-zinc-900 border-x border-white/5 opacity-80" />
+    <section
+      ref={containerRef}
+      className="relative w-full h-screen overflow-hidden bg-black"
+    >
+      <div ref={trackRef} className="flex h-full" style={{ width: `${PANELS.length * 100}vw` }}>
+        {PANELS.map((panel) => (
+          <div
+            key={panel.code}
+            className="lb-panel relative w-screen h-full shrink-0 overflow-hidden"
+          >
+            {/* Full-bleed background image */}
+            <div className="lb-img absolute inset-0 w-[120%] h-full -left-[10%]">
+              <Image
+                src={panel.src}
+                alt={panel.name}
+                fill
+                sizes="120vw"
+                className="object-cover"
+                style={{
+                  filter: "brightness(0.75) contrast(1.1) saturate(0.85)",
+                }}
+                loading="lazy"
+              />
             </div>
 
-            {/* Red diagonal slash */}
-            <div className={`absolute -top-10 -left-10 w-[200px] h-[2px] bg-red origin-left rotate-45 z-10 ${idx === 0 ? "scale-x-100" : "scale-x-100"}`} />
+            {/* Dark gradient overlay */}
+            <div
+              className="absolute inset-0 z-1"
+              style={{ background: "rgba(8,8,8,0.5)" }}
+            />
 
-            {/* Labels */}
-            <div className="absolute top-10 left-10 md:top-20 md:left-20 z-10">
-              <h2 className="font-bebas text-5xl md:text-8xl text-bone tracking-widest">{panel.title}</h2>
-            </div>
-            
-            <div className="absolute bottom-10 right-10 md:bottom-20 md:right-20 z-10 overflow-hidden">
-              <h3 className="panel-name font-sans text-xs md:text-sm text-steel tracking-[0.4em] uppercase">
-                {panel.name}
-              </h3>
-            </div>
+            {/* Red diagonal line — SVG */}
+            <svg
+              className="absolute inset-0 w-full h-full z-2 pointer-events-none"
+              preserveAspectRatio="none"
+            >
+              <line
+                x1="100%"
+                y1="0"
+                x2="40%"
+                y2="50%"
+                stroke="var(--red)"
+                strokeWidth="1"
+              />
+            </svg>
+
+            {/* Look number — top-left */}
+            <span className="absolute top-8 left-8 md:top-12 md:left-12 z-10 font-bebas text-[1rem] text-red tracking-[0.3em]">
+              {panel.code}
+            </span>
+
+            {/* Look name — bottom-right */}
+            <h3 className="lb-name absolute bottom-12 right-8 md:bottom-16 md:right-12 z-10 font-bebas text-[3rem] text-bone leading-none">
+              {panel.name}
+            </h3>
+
+            {/* Shop look link — bottom-left */}
+            <a
+              href="#"
+              className="absolute bottom-12 left-8 md:bottom-16 md:left-12 z-10 font-sans text-[0.7rem] font-light text-bone tracking-[0.15em] group"
+            >
+              <span className="relative">
+                SHOP LOOK →
+                <span className="absolute -bottom-1 left-0 h-px w-0 bg-bone transition-all duration-300 group-hover:w-full" />
+              </span>
+            </a>
           </div>
         ))}
       </div>

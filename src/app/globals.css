@@ -1,70 +1,61 @@
 @import "tailwindcss";
 
+:root {
+  --black:   #080808;
+  --bone:    #f0ede8;
+  --red:     #ff1a1a;
+  --steel:   #9a9a9a;
+  --dark2:   #111111;
+  --dark3:   #1a1a1a;
+  --ease:    cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: auto; } /* Lenis handles smooth scroll */
+body {
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--font-sans), 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* FILM GRAIN — always on top */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px;
+  animation: grain 0.5s steps(1) infinite;
+}
+
+@keyframes grain {
+  0%,100% { transform: translate(0,0); }
+  10% { transform: translate(-2%,-3%); }
+  20% { transform: translate(3%,2%); }
+  30% { transform: translate(-1%,4%); }
+  40% { transform: translate(2%,-1%); }
+  50% { transform: translate(-3%,3%); }
+  60% { transform: translate(1%,-2%); }
+  70% { transform: translate(-2%,1%); }
+  80% { transform: translate(3%,-3%); }
+  90% { transform: translate(-1%,2%); }
+}
+
 @theme inline {
   --color-black: var(--black);
   --color-bone: var(--bone);
   --color-red: var(--red);
   --color-steel: var(--steel);
-  --color-dark-2: var(--dark-2);
-  --color-dark-3: var(--dark-3);
-  
-  --font-bebas: var(--font-bebas);
-  --font-sans: var(--font-sans);
-}
-
-:root {
-  --black: #080808;
-  --bone: #f0ede8;
-  --red: #ff1a1a;
-  --steel: #a0a0a0;
-  --dark-2: #111111;
-  --dark-3: #1a1a1a;
-}
-
-body {
-  background-color: var(--black);
-  color: var(--bone);
-  overflow-x: hidden;
-  margin: 0;
-  padding: 0;
-  -webkit-font-smoothing: antialiased;
-  cursor: none; /* We use a custom cursor everywhere */
-}
-
-::selection {
-  background-color: var(--red);
-  color: var(--black);
-}
-
-/* Typography globals */
-h1, h2, h3, h4, .font-bebas {
-  font-family: var(--font-bebas), sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.font-sans {
-  font-family: var(--font-sans), sans-serif;
-}
-
-/* Custom Cursor class logic handled by JS */
-.hide-cursor, .hide-cursor * {
-  cursor: none !important;
-}
-
-/* Lenis Smooth Scroll Boilerplate */
-html.lenis, html.lenis body {
-  height: auto;
-}
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-.lenis.lenis-scrolling iframe {
-  pointer-events: none;
+  --color-dark2: var(--dark2);
+  --color-dark3: var(--dark3);
+  --font-sans: var(--font-sans), 'DM Sans', sans-serif;
+  --font-bebas: var(--font-bebas), 'Bebas Neue', cursive;
+  --ease: var(--ease);
 }

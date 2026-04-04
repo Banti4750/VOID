@@ -1,80 +1,156 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import VanillaTilt from "vanilla-tilt";
 
-const cards = [
-  { id: 1, title: "CORE ESSENTIALS", items: "12 PIECES", colSpan: "col-span-12 md:col-span-8", rowSpan: "row-span-2", height: "h-[60vh] md:h-[80vh]" },
-  { id: 2, title: "VOID ACCESSORIES", items: "04 PIECES", colSpan: "col-span-12 md:col-span-4", rowSpan: "row-span-1", height: "h-[30vh] md:h-auto" },
-  { id: 3, title: "LIMITED HEADWEAR", items: "02 PIECES", colSpan: "col-span-12 md:col-span-4", rowSpan: "row-span-1", height: "h-[30vh] md:h-auto" },
-  { id: 4, title: "TACTICAL LOWER", items: "06 PIECES", colSpan: "col-span-12 md:col-span-5", rowSpan: "row-span-2", height: "h-[40vh] md:h-[60vh]" },
-  { id: 5, title: "WINTER CAPSULE", items: "08 PIECES", colSpan: "col-span-12 md:col-span-7", rowSpan: "row-span-2", height: "h-[50vh] md:h-[60vh]" }
+gsap.registerPlugin(ScrollTrigger);
+
+const CARDS = [
+  {
+    src: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=90&fit=crop",
+    title: "THE SILENT SERIES",
+    info: "12 PIECES — ₹3,999",
+    area: "card1",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=90&fit=crop",
+    title: "CARBON JACKET",
+    info: "1 PIECE — ₹7,499",
+    area: "card2",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=90&fit=crop",
+    title: "BONE CARGO",
+    info: "1 PIECE — ₹4,999",
+    area: "card3",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=90&fit=crop",
+    title: "VOID TEE",
+    info: "1 PIECE — ₹2,499",
+    area: "card4",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1548126032-079a0fb0099d?w=900&q=90&fit=crop",
+    title: "SS26 FULL LOOK",
+    info: "4 PIECES — ₹14,999",
+    area: "card5",
+  },
 ];
 
 export function CollectionGrid() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    const ctx = gsap.context(() => {
+      const cards = gridRef.current?.querySelectorAll(".grid-card");
+      if (!cards) return;
 
-    const tiltNodes = containerRef.current?.querySelectorAll(".tilt-card");
-    if (tiltNodes) {
-      VanillaTilt.init(Array.from(tiltNodes) as HTMLElement[], {
-        max: 8,
-        speed: 400,
-        glare: false,
-        scale: 1, // Keep scale 1 so only image scales
-      });
-
-      // Scroll staggered entrance
-      gsap.fromTo(tiltNodes,
-        { y: 100, opacity: 0 },
+      gsap.fromTo(
+        cards,
+        { y: 80, opacity: 0 },
         {
-          y: 0, opacity: 1,
-          duration: 1.2,
-          stagger: 0.15,
+          y: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.9,
           ease: "power3.out",
           scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top 70%",
-          }
+            trigger: gridRef.current,
+            start: "top 75%",
+          },
         }
       );
-    }
+    }, gridRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={containerRef} className="w-full bg-black py-20 px-[3px] md:px-safe">
-      <div className="grid grid-cols-12 gap-[3px] w-full max-w-[1800px] mx-auto auto-rows-fr">
-        {cards.map((card) => (
-          <div 
-            key={card.id}
-            className={`tilt-card relative overflow-hidden bg-dark-2 group border-t border-t-transparent hover:border-t-red transition-colors duration-300 w-full cursor-pointer ${card.colSpan} ${card.rowSpan} ${card.height}`}
-            data-hover-cursor="true"
+    <section className="w-full bg-black py-1">
+      <div
+        ref={gridRef}
+        className="grid gap-0.75"
+        style={{
+          gridTemplateColumns: "2fr 1fr 1fr",
+          gridTemplateRows: "auto auto",
+          gridTemplateAreas: `
+            "card1 card2 card3"
+            "card1 card4 card5"
+          `,
+        }}
+      >
+        {CARDS.map((card) => (
+          <div
+            key={card.area}
+            data-cursor="product"
+            className="grid-card relative overflow-hidden group cursor-pointer"
+            style={{
+              gridArea: card.area,
+              minHeight: card.area === "card1" ? "75vh" : "37vh",
+            }}
           >
-            {/* Grain Overlay */}
-            <div className="absolute inset-0 z-[2] opacity-20 pointer-events-none mix-blend-overlay"
-                 style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"n\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.8\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23n)\"/%3E%3C/svg%3E')" }} />
-                 
-            {/* Image Pseudo-Element / Placeholder */}
-            <div className="absolute inset-0 z-[1] w-full h-full bg-gradient-to-t from-black/80 via-black/20 to-transparent scale-100 group-hover:scale-[1.05] transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
-               <div className="w-full h-full bg-[#111]" /> {/* Replace with next/image later */}
-            </div>
+            {/* Image */}
+            <Image
+              src={card.src}
+              alt={card.title}
+              fill
+              sizes={
+                card.area === "card1"
+                  ? "(max-width: 768px) 100vw, 50vw"
+                  : "(max-width: 768px) 50vw, 25vw"
+              }
+              className="object-cover transition-all duration-700 group-hover:scale-[1.04]"
+              style={{
+                filter: "brightness(0.7) saturate(0.8)",
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.filter =
+                  "brightness(0.85) saturate(1)";
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.filter =
+                  "brightness(0.7) saturate(0.8)";
+              }}
+              loading="lazy"
+            />
 
-            {/* Content Reveal block */}
-            <div className="absolute bottom-0 left-0 w-full p-6 md:p-10 z-[3] translate-y-[20%] opacity-80 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col justify-end h-full">
-              <h3 className="font-bebas text-4xl md:text-5xl text-bone mb-2">
+            {/* Red top border — draws across on hover */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-red origin-left scale-x-0 transition-transform duration-500 ease-(--ease) group-hover:scale-x-100 z-10" />
+
+            {/* Text overlay */}
+            <div
+              className="absolute bottom-0 left-0 right-0 z-5 px-6 pb-5 pt-16 translate-y-7.5 transition-transform duration-500 ease-(--ease) group-hover:translate-y-0"
+              style={{
+                background:
+                  "linear-gradient(0deg, rgba(8,8,8,0.95) 0%, transparent 100%)",
+              }}
+            >
+              <h3 className="font-bebas text-[1.4rem] text-bone leading-none mb-1">
                 {card.title}
               </h3>
-              <p className="font-sans text-xs text-steel tracking-[0.2em] uppercase">
-                {card.items}
+              <p className="font-sans text-[0.75rem] font-light text-steel tracking-wider">
+                {card.info}
               </p>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Mobile fallback: stack vertically */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 768px) {
+          [style*="gridTemplateColumns"] {
+            grid-template-columns: 1fr 1fr !important;
+            grid-template-areas:
+              "card1 card1"
+              "card2 card3"
+              "card4 card5" !important;
+          }
+        }
+      `}} />
     </section>
   );
 }

@@ -1,151 +1,197 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export function Waitlist() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
+gsap.registerPlugin(ScrollTrigger);
 
-  const countdownTarget = new Date();
-  countdownTarget.setDate(countdownTarget.getDate() + 14); // arbitrary 14 days
+function useCountdown(targetMs: number) {
+  const [time, setTime] = useState({ d: 0, h: 0, m: 0, s: 0 });
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = countdownTarget.getTime() - now;
-
-      if (distance < 0) {
-        clearInterval(timer);
-        return;
-      }
-
-      setTimeLeft({
-        d: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        s: Math.floor((distance % (1000 * 60)) / 1000)
+    const tick = () => {
+      const diff = Math.max(0, targetMs - Date.now());
+      setTime({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff % 86400000) / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
       });
-    }, 1000);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [targetMs]);
 
-    return () => clearInterval(timer);
+  return time;
+}
+
+// 30 days from now (stable across renders via module-level const)
+const TARGET = Date.now() + 30 * 86400000;
+
+export function Waitlist() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const headlineRef = useRef<HTMLDivElement>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [email, setEmail] = useState("");
+  const time = useCountdown(TARGET);
+
+  /* Headline word-by-word stagger */
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const words = headlineRef.current?.querySelectorAll(".hw");
+      if (words) {
+        gsap.fromTo(
+          words,
+          { y: 80, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            stagger: 0.08,
+            duration: 1,
+            ease: "power4.out",
+            scrollTrigger: { trigger: sectionRef.current, start: "top 65%" },
+          }
+        );
+      }
+    }, sectionRef);
+    return () => ctx.revert();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const onSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(email) setSubmitted(true);
+    if (email) setSubmitted(true);
   };
 
-  const titleWords = ["THE", "NEXT", "DROP", "DROPS", "WHEN", "IT", "DROPS."];
+  /* Magnetic arrow button */
+  const onArrowMove = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width / 2);
+    const dy = e.clientY - (rect.top + rect.height / 2);
+    gsap.to(btn, { x: dx * 0.4, y: dy * 0.4, duration: 0.3, ease: "power2.out" });
+  }, []);
+  const onArrowLeave = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    gsap.to(e.currentTarget, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1,0.4)" });
+  }, []);
+
+  const segments: { value: number; label: string }[] = [
+    { value: time.d, label: "DAYS" },
+    { value: time.h, label: "HOURS" },
+    { value: time.m, label: "MINUTES" },
+    { value: time.s, label: "SECONDS" },
+  ];
 
   return (
-    <section className="relative w-full min-h-[90vh] bg-black text-bone py-32 px-4 md:px-16 flex flex-col justify-center overflow-hidden">
-      
-      <div className="max-w-[1400px] w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-        
-        {/* Left Side: Headline */}
-        <div className="flex flex-col">
-           {titleWords.map((word, i) => (
-              <motion.div 
-                key={i} 
-                initial={{ opacity: 0, y: 50, rotateX: 20 }}
-                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: i * 0.1, ease: "easeOut" }}
-                className="overflow-hidden"
-              >
-                <h2 className="font-bebas text-[12vw] lg:text-[6vw] leading-[0.85] text-white">
-                  {word}
-                </h2>
-              </motion.div>
-           ))}
-           <p className="mt-8 font-sans text-sm tracking-[0.2em] text-steel uppercase max-w-sm">
-             Get access before the world.
-           </p>
+    <section
+      ref={sectionRef}
+      className="relative w-full min-h-screen bg-dark2 text-bone flex flex-col items-center justify-center py-32 px-6 overflow-hidden"
+    >
+      {/* TEXTURE_BG at stronger opacity for depth */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center opacity-[0.12] pointer-events-none"
+        style={{
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80&fit=crop")',
+          filter: "brightness(0.4) saturate(0)",
+        }}
+      />
+
+      {/* Headline */}
+      <div ref={headlineRef} className="relative z-10 text-center mb-6">
+        <div className="overflow-hidden">
+          <span className="hw inline-block font-bebas text-[8vw] leading-[0.88] text-bone">THE&nbsp;</span>
+          <span className="hw inline-block font-bebas text-[8vw] leading-[0.88] text-bone">NEXT&nbsp;</span>
+          <span className="hw inline-block font-bebas text-[8vw] leading-[0.88] text-bone">DROP</span>
         </div>
-
-        {/* Right Side: Form & Counter */}
-        <div className="flex flex-col">
-          
-          <div className="mb-20 min-h-[100px]">
-            <AnimatePresence mode="wait">
-              {!submitted ? (
-                <motion.form 
-                  key="form"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  onSubmit={handleSubmit}
-                  className="flex flex-col relative group"
-                >
-                  <div className="flex items-end">
-                    <input 
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="YOUR EMAIL ADDRESS"
-                      className="w-full bg-transparent border-none outline-none font-bebas text-4xl text-bone placeholder:text-dark-3 pb-2 appearance-none rounded-none focus:ring-0"
-                      required
-                    />
-                    <button 
-                      type="submit" 
-                      data-hover-cursor="true"
-                      className="p-2 font-sans overflow-hidden group/btn"
-                    >
-                      <span className="inline-block transition-transform duration-300 group-hover/btn:-translate-y-1 group-hover/btn:translate-x-1">→</span>
-                      <span className="absolute inset-0 flex items-center justify-center opacity-0 -translate-x-2 translate-y-2 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 group-hover/btn:translate-y-0 text-red">↗</span>
-                    </button>
-                  </div>
-                  <div className="w-full h-[1px] bg-dark-3 mt-0 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 h-full bg-bone w-full -translate-x-full group-focus-within:translate-x-0 transition-transform duration-500 ease-out" />
-                  </div>
-                </motion.form>
-              ) : (
-                <motion.div 
-                  key="success"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col"
-                >
-                  <h3 className="font-bebas text-5xl text-red tracking-widest">YOU'RE IN THE VOID.</h3>
-                  <div className="w-full border-b-[2px] border-red mt-4 animate-[expand_1s_ease-out]" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="grid grid-cols-4 gap-4 md:gap-8 max-w-xl">
-            {Object.entries(timeLeft).map(([unit, value], i) => (
-              <div key={unit} className="flex flex-col items-center">
-                <div className="relative overflow-hidden w-full h-[60px] md:h-[100px] flex items-center justify-center bg-dark-2 mb-2">
-                   <AnimatePresence mode="popLayout">
-                      <motion.span
-                        key={value}
-                        initial={{ y: 50, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -50, opacity: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className="font-bebas text-5xl md:text-8xl text-bone leading-none absolute"
-                      >
-                        {String(value).padStart(2, '0')}
-                      </motion.span>
-                   </AnimatePresence>
-                </div>
-                <span className="font-sans text-[0.55rem] tracking-[0.4em] text-steel uppercase">
-                  {unit === 'd' ? 'DAYS' : unit === 'h' ? 'HOURS' : unit === 'm' ? 'MINUTES' : 'SECONDS'}
-                </span>
-              </div>
-            ))}
-          </div>
-
+        <div className="overflow-hidden">
+          <span className="hw inline-block font-bebas text-[8vw] leading-[0.88] text-bone">DROPS&nbsp;</span>
+          <span className="hw inline-block font-bebas text-[8vw] leading-[0.88] text-bone">WHEN</span>
+        </div>
+        <div className="overflow-hidden">
+          <span className="hw inline-block font-bebas text-[8vw] leading-[0.88] text-bone">IT&nbsp;</span>
+          <span className="hw inline-block font-bebas text-[8vw] leading-[0.88] text-red">DROPS.</span>
         </div>
       </div>
-      
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes expand {
-          0% { width: 0%; transform-origin: left; }
-          100% { width: 100%; transform-origin: left; }
+
+      {/* Subtext */}
+      <p className="relative z-10 font-sans text-[1rem] font-light text-steel mb-16 text-center">
+        Get access before the world knows it exists.
+      </p>
+
+      {/* Countdown */}
+      <div className="relative z-10 flex items-start gap-3 md:gap-5 mb-20">
+        {segments.map((seg, i) => (
+          <div key={seg.label} className="flex items-start">
+            {/* Colon separator */}
+            {i > 0 && (
+              <span className="font-bebas text-[4rem] text-red leading-none mx-2 md:mx-4 -mt-1">
+                :
+              </span>
+            )}
+            <div className="flex flex-col items-center">
+              <div className="relative overflow-hidden h-20 flex items-center justify-center">
+                <span
+                  key={seg.value}
+                  className="font-bebas text-[6rem] leading-none text-bone inline-block animate-[flipIn_0.3s_ease-out]"
+                >
+                  {String(seg.value).padStart(2, "0")}
+                </span>
+              </div>
+              <span className="font-sans text-[0.55rem] font-light tracking-[0.25em] text-steel mt-2">
+                {seg.label}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Email form */}
+      <div className="relative z-10 w-full max-w-md">
+        {!submitted ? (
+          <form onSubmit={onSubmit} className="flex items-end gap-4">
+            <div className="flex-1 group">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="YOUR EMAIL ADDRESS"
+                required
+                className="w-full bg-transparent border-b border-[rgba(240,237,232,0.3)] pb-3 font-sans text-[1rem] font-normal text-bone outline-none placeholder:text-steel placeholder:font-light placeholder:tracking-[0.15em] transition-colors duration-300 focus:border-red"
+              />
+            </div>
+            <button
+              type="submit"
+              onMouseMove={onArrowMove}
+              onMouseLeave={onArrowLeave}
+              className="font-sans text-[1.4rem] text-bone pb-3 transition-transform duration-300 hover:text-red hover:-rotate-45"
+            >
+              →
+            </button>
+          </form>
+        ) : (
+          <div className="flex flex-col items-center">
+            <h3 className="font-bebas text-[2rem] text-red tracking-wider animate-[fadeUp_0.6s_ease-out]">
+              YOU&apos;RE IN THE VOID.
+            </h3>
+            <div className="w-full h-0.5 bg-red mt-4 origin-left animate-[drawLine_0.8s_ease-out_0.3s_both]" />
+          </div>
+        )}
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes flipIn {
+          0% { transform: rotateX(90deg); opacity: 0; }
+          100% { transform: rotateX(0deg); opacity: 1; }
+        }
+        @keyframes fadeUp {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes drawLine {
+          0% { transform: scaleX(0); }
+          100% { transform: scaleX(1); }
         }
       `}} />
     </section>

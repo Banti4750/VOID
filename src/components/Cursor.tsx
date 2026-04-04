@@ -1,77 +1,121 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+
+type CursorState = "default" | "hover" | "product";
 
 export function Cursor() {
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Core movement
-  const mouseX = useMotionValue(-100);
-  const mouseY = useMotionValue(-100);
-
-  // Smooth springs for the outer ring
-  const springConfig = { damping: 25, stiffness: 200, mass: 0.5 };
-  const cursorXSpring = useSpring(mouseX, springConfig);
-  const cursorYSpring = useSpring(mouseY, springConfig);
+  const dotRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const mouse = useRef({ x: -100, y: -100 });
+  const ring = useRef({ x: -100, y: -100 });
+  const [state, setState] = useState<CursorState>("default");
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    const moveCursor = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
+    const onMouseMove = (e: MouseEvent) => {
+      mouse.current.x = e.clientX;
+      mouse.current.y = e.clientY;
 
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      // Check if we are hovering over an interactive element or something marked hoverable
-      if (
-        target.tagName.toLowerCase() === "button" ||
-        target.tagName.toLowerCase() === "a" ||
-        target.closest("button") ||
-        target.closest("a") ||
-        target.dataset.hoverCursor === "true"
-      ) {
-        setIsHovered(true);
-      } else {
-        setIsHovered(false);
+      // Dot follows instantly
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
       }
     };
 
-    window.addEventListener("mousemove", moveCursor);
-    document.addEventListener("mouseover", handleMouseOver);
+    const onMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      if (
+        target.closest("[data-cursor='product']") ||
+        target.hasAttribute("data-cursor") &&
+          target.getAttribute("data-cursor") === "product"
+      ) {
+        setState("product");
+      } else if (
+        target.tagName === "A" ||
+        target.tagName === "BUTTON" ||
+        target.closest("a") ||
+        target.closest("button")
+      ) {
+        setState("hover");
+      } else {
+        setState("default");
+      }
+    };
+
+    // Ring follows with lerp in rAF
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const animate = () => {
+      ring.current.x = lerp(ring.current.x, mouse.current.x, 0.12);
+      ring.current.y = lerp(ring.current.y, mouse.current.y, 0.12);
+
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate(${ring.current.x}px, ${ring.current.y}px) translate(-50%, -50%)`;
+      }
+
+      rafRef.current = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseover", onMouseOver);
+    rafRef.current = requestAnimationFrame(animate);
 
     return () => {
-      window.removeEventListener("mousemove", moveCursor);
-      document.removeEventListener("mouseover", handleMouseOver);
+      window.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseover", onMouseOver);
+      cancelAnimationFrame(rafRef.current);
     };
-  }, [mouseX, mouseY]);
+  }, []);
+
+  // Sizes based on state
+  const dotSize =
+    state === "default" ? 8 : state === "hover" ? 16 : 0;
+  const ringSize =
+    state === "default" ? 38 : state === "hover" ? 64 : 80;
+  const ringOpacity =
+    state === "default" ? 1 : state === "hover" ? 0.3 : 0.5;
 
   return (
     <>
-      {/* Inner Dot - exact position, completely red */}
-      <motion.div
-        className="fixed top-0 left-0 w-[10px] h-[10px] bg-red rounded-full pointer-events-none z-[99999] mix-blend-difference"
+      {/* Dot */}
+      <div
+        ref={dotRef}
+        className="fixed top-0 left-0 pointer-events-none z-9999 mix-blend-difference flex items-center justify-center"
         style={{
-          x: mouseX,
-          y: mouseY,
-          translateX: "-50%",
-          translateY: "-50%",
+          width: state === "product" ? "auto" : dotSize,
+          height: state === "product" ? "auto" : dotSize,
+          transition: "width 0.3s var(--ease), height 0.3s var(--ease)",
         }}
-      />
-      {/* Outer Ring - smooth lag, expands on hover */}
-      <motion.div
-        className="fixed top-0 left-0 w-[36px] h-[36px] border-[1px] border-red rounded-full pointer-events-none z-[99998] mix-blend-difference"
+      >
+        {state === "product" ? (
+          <span className="font-bebas text-[12px] tracking-widest text-bone select-none">
+            VIEW
+          </span>
+        ) : (
+          <div
+            className="w-full h-full rounded-full bg-red"
+            style={{
+              width: dotSize,
+              height: dotSize,
+              transition: "width 0.3s var(--ease), height 0.3s var(--ease)",
+            }}
+          />
+        )}
+      </div>
+
+      {/* Ring */}
+      <div
+        ref={ringRef}
+        className="fixed top-0 left-0 pointer-events-none z-9998 rounded-full border border-red"
         style={{
-          x: cursorXSpring,
-          y: cursorYSpring,
-          translateX: "-50%",
-          translateY: "-50%",
+          width: ringSize,
+          height: ringSize,
+          opacity: ringOpacity,
+          transition:
+            "width 0.35s var(--ease), height 0.35s var(--ease), opacity 0.35s var(--ease)",
         }}
-        animate={{
-          scale: isHovered ? 1.8 : 1,
-          opacity: isHovered ? 0.3 : 0.8,
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
     </>
   );

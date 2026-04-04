@@ -1,37 +1,76 @@
 "use client";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 
 export function Loader() {
-  const [isLoading, setIsLoading] = useState(true);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLHeadingElement>(null);
+  const [mounted, setMounted] = useState(true);
 
   useEffect(() => {
-    // Reveal after 1.2s
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
-    return () => clearTimeout(timer);
+    // Lock body scroll while loader is active
+    document.body.style.overflow = "hidden";
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        document.body.style.overflow = "";
+        setMounted(false);
+      },
+    });
+
+    // 1. Fade in logo
+    tl.fromTo(
+      logoRef.current,
+      { opacity: 0, scale: 0.92 },
+      { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }
+    );
+
+    // 2. Red line grows from 0% to 100% width
+    tl.fromTo(
+      lineRef.current,
+      { scaleX: 0 },
+      { scaleX: 1, duration: 1.2, ease: "power2.inOut" },
+      0.3
+    );
+
+    // 3. After line completes, slide entire overlay UP
+    tl.to(overlayRef.current, {
+      yPercent: -100,
+      duration: 0.9,
+      ease: "power4.inOut",
+    });
+
+    return () => {
+      tl.kill();
+      document.body.style.overflow = "";
+    };
   }, []);
 
+  if (!mounted) return null;
+
   return (
-    <AnimatePresence>
-      {isLoading && (
-        <motion.div
-          key="loader"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }}
-          className="fixed inset-0 z-[10000] bg-black flex items-center justify-center overflow-hidden"
-        >
-          <motion.h1 
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="font-bebas text-6xl md:text-8xl text-bone tracking-[0.2em]"
-          >
-            VØID
-          </motion.h1>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-8000 flex flex-col items-center justify-center bg-black"
+    >
+      {/* Logo */}
+      <h1
+        ref={logoRef}
+        className="font-bebas text-[8vw] leading-none text-bone opacity-0"
+      >
+        VØID
+      </h1>
+
+      {/* Red progress line */}
+      <div className="mt-6 w-[clamp(120px,20vw,260px)] h-0.5 bg-[rgba(240,237,232,0.1)]">
+        <div
+          ref={lineRef}
+          className="h-full w-full origin-left bg-red"
+          style={{ transform: "scaleX(0)" }}
+        />
+      </div>
+    </div>
   );
 }

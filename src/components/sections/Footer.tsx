@@ -1,80 +1,131 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const COLUMNS = [
+  { title: "SHOP", links: ["All Products", "New Arrivals", "Archive"] },
+  { title: "INFO", links: ["About", "Sizing", "Sustainability"] },
+  { title: "CONNECT", links: ["Instagram", "TikTok", "Discord"] },
+  { title: "LEGAL", links: ["Privacy", "Terms", "Returns"] },
+];
+
 export function Footer() {
+  const brandRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  /* Subtle parallax on massive brand text */
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        brandRef.current,
+        { y: 60 },
+        {
+          y: -30,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom bottom",
+            scrub: true,
+          },
+        }
+      );
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <footer className="relative w-full bg-black border-t border-dark-3 overflow-hidden text-bone flex flex-col pt-20">
-      
-      {/* Top Footer Items */}
-      <div className="relative z-10 w-full max-w-[1800px] mx-auto px-6 md:px-12 grid grid-cols-2 md:grid-cols-4 gap-10 mb-32">
-        <div className="flex flex-col gap-4">
-          <h4 className="font-bebas text-xl text-steel mb-2">SHOP</h4>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">NEW ARRIVALS</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">OUTERWEAR</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">BOTTOMS</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">ACCESSORIES</a>
-        </div>
-        
-        <div className="flex flex-col gap-4">
-          <h4 className="font-bebas text-xl text-steel mb-2">SUPPORT</h4>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">FAQ</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">SHIPPING</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">RETURNS</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">CONTACT</a>
-        </div>
-        
-        <div className="flex flex-col gap-4">
-          <h4 className="font-bebas text-xl text-steel mb-2">BRAND</h4>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">MANIFESTO</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">STOCKISTS</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">CAREERS</a>
-          <a href="#" className="font-sans text-xs tracking-widest uppercase hover:text-red transition-colors">TERMS</a>
-        </div>
-        
-        <div className="flex flex-col items-start gap-4 h-full md:items-end md:text-right">
-          <h4 className="font-bebas text-xl text-steel mb-2">SOCIAL</h4>
-          <div className="flex gap-4 mb-4">
-            {/* Minimal SVG icons */}
-            <a href="#" className="hover:-translate-y-1 transition-transform">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-              </svg>
-            </a>
-            <a href="#" className="hover:-translate-y-1 transition-transform">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-              </svg>
-            </a>
-          </div>
-          
-          <div className="flex items-center gap-2 mt-auto">
-             <div className="w-2 h-2 rounded-full bg-red animate-pulse" />
-             <span className="font-sans text-[0.6rem] tracking-widest text-steel mt-1">SYSTEM ONLINE</span>
-          </div>
-        </div>
-      </div>
+    <footer ref={sectionRef} className="relative w-full bg-[#050505] overflow-hidden pt-20 pb-0">
+      {/* Dark atmospheric texture */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center opacity-[0.06] pointer-events-none"
+        style={{
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1553949345-eb786bb3f7ba?w=1920&q=80&fit=crop")',
+          filter: "brightness(0.3) saturate(0)",
+        }}
+      />
 
-      {/* Grid Pattern Background */}
-      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" 
-           style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-      {/* Massive Brand Typo */}
-      <div className="w-full overflow-hidden relative z-10 select-none pb-4 md:pb-0 pointer-events-none">
-        <h1 className="font-bebas text-[35vw] md:text-[28vw] leading-[0.7] text-bone text-center m-0 p-0 text-transparent opacity-80 mix-blend-difference"
-            style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)" }}>
+      {/* MASSIVE BRAND NAME — behind content */}
+      <div
+        ref={brandRef}
+        className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none"
+      >
+        <span
+          className="font-bebas text-[clamp(8rem,22vw,30rem)] leading-none text-transparent"
+          style={{ WebkitTextStroke: "1px rgba(240,237,232,0.06)" }}
+        >
           VØID
-        </h1>
+        </span>
       </div>
 
-      {/* Copyright Strip */}
-      <div className="relative z-20 w-full border-t border-dark-3 py-4 flex flex-col md:flex-row justify-between items-center px-6 md:px-12 bg-black">
-        <p className="font-sans text-[0.65rem] tracking-[0.2em] text-steel uppercase text-center md:text-left">
+      {/* Footer top row — 4 link columns */}
+      <div className="relative z-10 w-full max-w-350 mx-auto px-6 md:px-12 grid grid-cols-2 md:grid-cols-4 gap-10 mb-20">
+        {COLUMNS.map((col) => (
+          <div key={col.title} className="flex flex-col gap-4">
+            <h4 className="font-sans text-[0.7rem] font-medium tracking-[0.15em] text-bone mb-1">
+              {col.title}
+            </h4>
+            {col.links.map((link) => (
+              <a
+                key={link}
+                href="#"
+                className="font-sans text-[0.7rem] font-light tracking-[0.15em] text-steel transition-colors duration-300 hover:text-bone"
+              >
+                {link}
+              </a>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Divider */}
+      <div className="relative z-10 w-full h-px bg-[rgba(240,237,232,0.08)]" />
+
+      {/* Footer bottom row */}
+      <div className="relative z-10 w-full max-w-350 mx-auto px-6 md:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Left — copyright */}
+        <p className="font-sans text-[0.65rem] font-light text-steel tracking-wider text-center md:text-left">
           © 2026 VØID. ALL RIGHTS RESERVED. NO GODS, NO RULES.
         </p>
-        <p className="font-sans text-[0.65rem] tracking-[0.2em] text-dark-3 uppercase mt-2 md:mt-0 cursor-default hover:text-red transition-colors">
-          DESIGNED FOR THOSE WHO MOVE IN SILENCE
-        </p>
+
+        {/* Center — LIVE indicator */}
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-red animate-pulse" />
+          <span className="font-sans text-[0.6rem] font-light tracking-[0.15em] text-steel">
+            LIVE
+          </span>
+        </div>
+
+        {/* Right — social SVG line icons */}
+        <div className="flex items-center gap-5">
+          {/* Instagram */}
+          <a href="#" className="text-steel hover:text-bone transition-colors duration-300">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+            </svg>
+          </a>
+          {/* TikTok */}
+          <a href="#" className="text-steel hover:text-bone transition-colors duration-300">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+            </svg>
+          </a>
+          {/* Discord */}
+          <a href="#" className="text-steel hover:text-bone transition-colors duration-300">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 9a5 5 0 0 0-5-5 5 5 0 0 0-5 5c0 6 5 11 5 11s5-5 5-11z" />
+              <circle cx="13" cy="9" r="1.5" />
+              <path d="M6 15c2-2 4.5-3 7-3s5 1 7 3" />
+            </svg>
+          </a>
+        </div>
       </div>
     </footer>
   );

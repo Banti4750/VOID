@@ -3,8 +3,9 @@ import { Bebas_Neue, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Cursor } from "@/components/Cursor";
 import { Loader } from "@/components/Loader";
-import { GrainOverlay } from "@/components/GrainOverlay";
 import { LenisInit } from "@/components/LenisInit";
+import { ScrollProgress } from "@/components/ScrollProgress";
+import { Nav } from "@/components/Nav";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -30,11 +31,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${bebas.variable} ${dmSans.variable}`}>
-      <body className="antialiased min-h-screen bg-black text-bone overflow-x-hidden hide-cursor">
+      <body className="antialiased min-h-screen bg-black text-bone overflow-x-hidden">
         <LenisInit />
-        <GrainOverlay />
+        <ScrollProgress />
         <Cursor />
         <Loader />
+        <Nav />
         {children}
       </body>
     </html>
