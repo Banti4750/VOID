@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VØID — SS26 Landing Page
 
-## Getting Started
+> *"We don't follow. We don't explain. We build for those who move in silence."*
 
-First, run the development server:
+A high-impact fashion landing page for **VØID**, a premium streetwear brand built on the principle of **form over function** — zero noise, zero compromise.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**→ [Live Preview](https://void-pied-two.vercel.app/)**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✦ Overview
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+VØID is a dark, editorial-grade landing page experience for a fictional SS26 streetwear drop. Designed with brutalist minimalism and raw typographic energy, it captures the brand ethos: silence, restraint, and uncompromising quality.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ✦ Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Hero Section** — Full-viewport typographic statement with animated marquee ticker
+- **Product Drop** — Featured item with size selector, stock counter, and add-to-bag CTA
+- **Collection Grid** — Curated SS26 pieces with editorial naming (*Carbon Jacket*, *Bone Cargo*, *Void Tee*)
+- **Lookbook** — Cinematic editorial shots across four looks (*Concrete Ghost*, *After Dark*, *Signal Lost*, *Void Walker*)
+- **Brand Manifesto** — Stat-driven identity section with zero-ads philosophy
+- **Drop Registration** — Email capture for early access to future releases
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## ✦ Design Language
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Element | Direction |
+|---|---|
+| Palette | Void black, off-white, muted neutrals |
+| Typography | Brutalist display + editorial serif |
+| Motion | Scroll-triggered reveals, infinite marquee |
+| Tone | Silent luxury — no logo noise, no clutter |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## ✦ Tech Stack
+
+Built with **Next.js** · Deployed on **Vercel** · Images via **Unsplash**
+
+---
+
+*No drops wasted. No ads. Ever.*
